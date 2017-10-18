@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, Response, Headers, URLSearchParams, RequestOptions } from '@angular/http';
+import { HTTP, HTTPResponse } from '@ionic-native/http';
 import { ConfigProvider } from './config';
 import 'rxjs/add/operator/map';
 import { Myki } from '../models/myki';
@@ -31,7 +32,7 @@ export class MykiProvider {
   loggedIn: boolean = false;
 
   constructor(
-    public http: Http,
+    public http: HTTP,
     public configProvider: ConfigProvider
   ) {
   }
@@ -79,10 +80,10 @@ export class MykiProvider {
     // determine if we're in mock demo models
     if (username === 'demo' && password === 'demo') {
       this.demoMode = true;
-      return this.mockHttpDelay(() => {
-        this.mockLogin()
-        this.loggingIn = false
-      })
+      // return this.mockHttpDelay(() => {
+      //   this.mockLogin()
+      //   this.loggingIn = false
+      // })
     }
 
     // specify the login endpoint
@@ -103,7 +104,7 @@ export class MykiProvider {
             data => {
               // verify if we are actually logged in
               // successful login redirects us to the "Login-Services.aspx" page
-              if (data.url !== `${this.apiRoot}Registered/MyMykiAccount.aspx?menu=My%20myki%20account`)
+              if (data.headers.url !== `${this.apiRoot}Registered/MyMykiAccount.aspx?menu=My%20myki%20account`)
                 return reject()
 
               console.log("logged in to account")
@@ -170,7 +171,7 @@ export class MykiProvider {
 
     // determine if we're in mock demo models
     if (this.demoMode) {
-      return this.mockHttpDelay(() => { this.mockAccountDetails() })
+      // return this.mockHttpDelay(() => { this.mockAccountDetails() })
     }
 
     // specify the login endpoint
@@ -181,7 +182,7 @@ export class MykiProvider {
       this.httpGetAsp(accountUrl).then(
         data => {
           // check if we're redirected to error page
-          if (data.url === this.errorUrl) {
+          if (data.headers.url === this.errorUrl) {
             console.error('error loading account details (redirected to error page)')
             return reject()
           }
@@ -294,7 +295,7 @@ export class MykiProvider {
       this.httpGetAspWithRetry(cardUrl).then(
         data => {
           // check if we're redirected to error page
-          if (data.url === this.errorUrl) {
+          if (data.headers.url === this.errorUrl) {
             console.error('error loading card details (redirected to error page)')
             return reject()
           }
@@ -382,7 +383,7 @@ export class MykiProvider {
       this.httpGetAspWithRetry(historyUrl).then(
         data => {
           // check if we're redirected to error page
-          if (data.url === this.errorUrl) {
+          if (data.headers.url === this.errorUrl) {
             console.error('error loading card history (redirected to error page)')
             return reject()
           }
@@ -506,7 +507,7 @@ export class MykiProvider {
       this.httpGetAspWithRetry(topupUrl).then(
         data => {
           // check if we're redirected to error page
-          if (data.url === this.errorUrl) {
+          if (data.headers.url === this.errorUrl) {
             console.error('error loading top up (redirected to error page)')
             return reject()
           }
@@ -547,7 +548,7 @@ export class MykiProvider {
                     return reject()
 
                   // extract "cn" token from URL, we need this later
-                  let cnToken = (<any>this.parseUrlQuery(data.url)).cn
+                  let cnToken = (<any>this.parseUrlQuery(data.headers.url)).cn
                   // store "cn" token in topup options
                   topupOptions.cnToken = cnToken
 
@@ -572,7 +573,7 @@ export class MykiProvider {
   topupCardOrder(options: Myki.TopupOptions): Promise<Myki.TopupOrder> {
     // determine if we're in mock demo models
     if (this.demoMode) {
-      return this.mockHttpDelay(() => { return Promise.resolve(this.mockTopupOrder(options)) })
+      // return this.mockHttpDelay(() => { return Promise.resolve(this.mockTopupOrder(options)) })
     }
 
     // specify the topup endpoint
@@ -639,7 +640,7 @@ export class MykiProvider {
           options.reminderMobile = scraperJquery.find("#ctl00_uxContentPlaceHolder_uxreminderMobile").val().trim()
 
           // extract "cn" token from URL, we need this later
-          let cnToken = (<any>this.parseUrlQuery(data.url)).cn
+          let cnToken = (<any>this.parseUrlQuery(data.headers.url)).cn
           // store "cn" token in topup options
           options.cnToken = cnToken
 
@@ -655,7 +656,7 @@ export class MykiProvider {
   topupCardPay(options: Myki.TopupOptions): Promise<string> {
     // determine if we're in mock demo models
     if (this.demoMode) {
-      return this.mockHttpDelay(() => { return Promise.resolve('123456') })
+      // return this.mockHttpDelay(() => { return Promise.resolve('123456') })
     }
 
     // specify the topup endpoint
@@ -727,7 +728,7 @@ export class MykiProvider {
           this.httpPostFormAsp(topupConfirmUrl, body).then(
             data => {
               // sanity check confirmation URL
-              if (data.url !== `${this.apiRoot}Registered/TopUp/TopUpConfirmation.aspx`)
+              if (data.headers.url !== `${this.apiRoot}Registered/TopUp/TopUpConfirmation.aspx`)
                 return reject()
 
               // HUGE SUCCESS 
@@ -774,7 +775,7 @@ export class MykiProvider {
     })
   }
 
-  private httpGetAspWithRetry(url: string): Promise<Response> {
+  private httpGetAspWithRetry(url: string): Promise<HTTPResponse> {
     return new Promise((resolve, reject) => {
       // first try http get
       this.httpGetAsp(url).then(
@@ -809,16 +810,17 @@ export class MykiProvider {
     })
   }
 
-  private httpGetAsp(url: string): Promise<Response> {
+  private httpGetAsp(url: string): Promise<HTTPResponse> {
     // set up request options
     const options = new RequestOptions()
     options.withCredentials = true // set/send cookies
 
     return new Promise((resolve, reject) => {
-      this.http.get(url, options).subscribe(
+      this.http.get(url, {}, {}).then(
         data => {
+          debugger
           // if the page we landed on is not the page we requested
-          if (data.url !== url) {
+          if (data.headers !== url) {
             console.error('error HTTP GET page (redirected to another URL)')
             return reject("session")
           }
@@ -835,15 +837,10 @@ export class MykiProvider {
     })
   }
 
-  private httpPostFormAsp(url: string, body?: URLSearchParams): Promise<Response> {
+  private httpPostFormAsp(url: string, body?: URLSearchParams): Promise<HTTPResponse> {
     // set up request headers
     let headers = new Headers()
     headers.append('Content-Type', 'application/x-www-form-urlencoded') // we're going to submit form data
-
-    // set up request options
-    const options = new RequestOptions()
-    options.withCredentials = true // set/send cookies
-    options.headers = headers
 
     // set up POST body
     const postBody = new URLSearchParams('', new CustomURLEncoder())
@@ -855,8 +852,10 @@ export class MykiProvider {
     }
 
     return new Promise((resolve, reject) => {
-      this.http.post(url, postBody.toString(), options).subscribe(
+      this.http.post(url, postBody.toString(), headers).then(
         data => {
+          debugger
+          
           // update the page state
           this.storePageState(data);
 

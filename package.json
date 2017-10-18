@@ -24,6 +24,7 @@
     "@ionic-native/firebase": "^4.1.0",
     "@ionic-native/google-maps": "^4.1.0",
     "@ionic-native/header-color": "^4.1.0",
+    "@ionic-native/http": "^4.3.2",
     "@ionic-native/secure-storage": "^4.1.0",
     "@ionic-native/social-sharing": "^4.1.0",
     "@ionic-native/splash-screen": "^4.1.0",
@@ -33,10 +34,12 @@
     "com.googlemaps.ios": "https://github.com/mapsplugin/cordova-plugin-googlemaps-sdk",
     "cordova-android": "^6.2.3",
     "cordova-ios": "4.5.1",
+    "cordova-plugin-advanced-http": "^1.6.1",
     "cordova-plugin-app-version": "^0.1.9",
     "cordova-plugin-calendar": "^4.6.0",
     "cordova-plugin-compat": "^1.1.0",
     "cordova-plugin-device": "^1.1.6",
+    "cordova-plugin-file": "^4.3.3",
     "cordova-plugin-firebase": "^0.1.22",
     "cordova-plugin-googlemaps": "git+https://github.com/mapsplugin/cordova-plugin-googlemaps.git#multiple_maps",
     "cordova-plugin-googlemaps-sdk": "git+https://github.com/mapsplugin/cordova-plugin-googlemaps-sdk.git",
@@ -128,7 +131,8 @@
       },
       "cordova-plugin-app-version": {},
       "cordova-plugin-statusbar": {},
-      "cordova-plugin-ionic-webview": {}
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-advanced-http": {}
     }
   }
 }
